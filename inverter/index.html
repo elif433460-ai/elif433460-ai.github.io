@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Beyaz Arka Plan Siyah Yazı Dönüştürücü</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    button:hover { background: #1d4ed8; }
+
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #059669;
+    }
+
+    .secondary:hover {
+      background: #047857;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      white-space: pre-line;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .page-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .page-card h3 {
+      margin: 6px 0 10px;
+      font-size: 15px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .tag.dark {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .tag.light {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .control-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .control-box label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .control-box input[type="range"] {
+      width: 100%;
+    }
+
+    .control-value {
+      font-size: 13px;
+      color: #334155;
+      margin-top: 6px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #475569;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>PDF Beyaz Arka Plan / Siyah Yazı Dönüştürücü</h1>
+      <p>
+        Koyu arka planlı ders notu sayfalarını otomatik olarak
+        <strong>beyaz arka plan + siyah yazı</strong> haline getirir.
+        Açık/beyaz sayfalar mümkün olduğunca aynen bırakılır.
+      </p>
+
+      <div class="row">
+        <input type="file" id="pdfFile" accept="application/pdf" />
+        <button id="processBtn">PDF'i İşle</button>
+        <button id="downloadBtn" class="secondary" disabled>Sonucu PDF Olarak İndir</button>
+      </div>
+
+      <div class="controls">
+        <div class="control-box">
+          <label for="darkThreshold">Koyu sayfa eşiği</label>
+          <input type="range" id="darkThreshold" min="110" max="160" step="1" value="132" />
+          <div class="control-value" id="darkThresholdValue">132</div>
+          <div class="note">Daha düşük değer = daha az sayfa dönüştürülür.</div>
+        </div>
+
+        <div class="control-box">
+          <label for="whiteTextThreshold">Beyaz yazı eşiği</label>
+          <input type="range" id="whiteTextThreshold" min="120" max="180" step="1" value="138" />
+          <div class="control-value" id="whiteTextThresholdValue">138</div>
+          <div class="note">Daha düşük değer = daha fazla açık yazı yakalanır.</div>
+        </div>
+
+        <div class="control-box">
+          <label for="coloredThreshold">Renkli öğe eşiği</label>
+          <input type="range" id="coloredThreshold" min="70" max="130" step="1" value="88" />
+          <div class="control-value" id="coloredThresholdValue">88</div>
+          <div class="note">Oklar ve renkli başlıklar için hassasiyet.</div>
+        </div>
+      </div>
+
+      <div class="status" id="status">
+PDF seçip “PDF'i İşle” butonuna bas.
+      </div>
+
+      <p class="small">
+        Not: Çıktı, sayfalar görüntüye dönüştürülüp yeni PDF olarak oluşturularak alınır.
+        Bu yüzden metin seçilebilirliği korunmayabilir.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Önizleme</h2>
+      <div id="preview" class="preview-grid"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+
+    const fileInput = document.getElementById("pdfFile");
+    const processBtn = document.getElementById("processBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const statusEl = document.getElementById("status");
+    const previewEl = document.getElementById("preview");
+
+    const darkThresholdEl = document.getElementById("darkThreshold");
+    const whiteTextThresholdEl = document.getElementById("whiteTextThreshold");
+    const coloredThresholdEl = document.getElementById("coloredThreshold");
+
+    const darkThresholdValueEl = document.getElementById("darkThresholdValue");
+    const whiteTextThresholdValueEl = document.getElementById("whiteTextThresholdValue");
+    const coloredThresholdValueEl = document.getElementById("coloredThresholdValue");
+
+    let processedPages = [];
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function getLuminance(r, g, b) {
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function updateControlLabels() {
+      darkThresholdValueEl.textContent = darkThresholdEl.value;
+      whiteTextThresholdValueEl.textContent = whiteTextThresholdEl.value;
+      coloredThresholdValueEl.textContent = coloredThresholdEl.value;
+    }
+
+    updateControlLabels();
+
+    darkThresholdEl.addEventListener("input", updateControlLabels);
+    whiteTextThresholdEl.addEventListener("input", updateControlLabels);
+    coloredThresholdEl.addEventListener("input", updateControlLabels);
+
+    function analyzePageBrightness(imageData, darkThreshold) {
+      const data = imageData.data;
+      let totalLum = 0;
+      let darkPixels = 0;
+      let veryDarkPixels = 0;
+      let brightPixels = 0;
+
+      const step = 16;
+      let count = 0;
+
+      for (let i = 0; i < data.length; i += step) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const lum = getLuminance(r, g, b);
+
+        totalLum += lum;
+        count++;
+
+        if (lum < 120) darkPixels++;
+        if (lum < 80) veryDarkPixels++;
+        if (lum > 190) brightPixels++;
+      }
+
+      const avgLum = totalLum / count;
+      const darkRatio = darkPixels / count;
+      const veryDarkRatio = veryDarkPixels / count;
+      const brightRatio = brightPixels / count;
+
+      // Daha sıkı koyu sayfa tespiti:
+      // Sadece ortalama düşükse değil,
+      // aynı zamanda ciddi miktarda koyu alan da olmalı.
+      const isDarkPage =
+        (avgLum < darkThreshold && darkRatio > 0.28) ||
+        (avgLum < darkThreshold - 6 && darkRatio > 0.22) ||
+        (avgLum < darkThreshold - 12) ||
+        (veryDarkRatio > 0.18 && brightRatio < 0.35 && avgLum < darkThreshold + 2);
+
+      return {
+        avgLum,
+        darkRatio,
+        veryDarkRatio,
+        brightRatio,
+        isDarkPage
+      };
+    }
+
+    function transformDarkPageToPrintFriendly(imageData, settings) {
+      const data = imageData.data;
+      const width = imageData.width;
+      const height = imageData.height;
+
+      const totalPixels = width * height;
+      const mask = new Uint8Array(totalPixels);
+      const closed = new Uint8Array(totalPixels);
+      const visited = new Uint8Array(totalPixels);
+      const keep = new Uint8Array(totalPixels);
+
+      const idx = (x, y) => y * width + x;
+
+      const whiteTextThreshold = settings.whiteTextThreshold;
+      const coloredThreshold = settings.coloredThreshold;
+
+      // 1) Açık yazı / açık renkli içerik tespiti
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const maxc = Math.max(r, g, b);
+        const minc = Math.min(r, g, b);
+        const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        const sat = maxc === 0 ? 0 : (maxc - minc) / maxc;
+
+        const isWhiteText = lum > whiteTextThreshold;
+
+        const isColoredBright =
+          lum > coloredThreshold &&
+          sat > 0.14 &&
+          (g >= r || g >= b);
+
+        mask[p] = (isWhiteText || isColoredBright) ? 1 : 0;
+      }
+
+      // 2) Çok hafif kapatma işlemi
+      // Yazıyı çok kalınlaştırmamak için daha yumuşak
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const p = idx(x, y);
+
+          if (mask[p]) {
+            closed[p] = 1;
+            continue;
+          }
+
+          let count = 0;
+
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+
+              const nx = x + dx;
+              const ny = y + dy;
+
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                if (mask[idx(nx, ny)]) count++;
+              }
+            }
+          }
+
+          // 5 komşu ile hafif koruma; çok şişirmez
+          closed[p] = count >= 5 ? 1 : 0;
+        }
+      }
+
+      function bfs(startX, startY) {
+        const queue = [[startX, startY]];
+        const pixels = [];
+        visited[idx(startX, startY)] = 1;
+
+        let minX = startX, maxX = startX;
+        let minY = startY, maxY = startY;
+        let touchesBorder = false;
+
+        while (queue.length) {
+          const [x, y] = queue.pop();
+          const p = idx(x, y);
+          pixels.push(p);
+
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+
+          if (x <= 1 || y <= 1 || x >= width - 2 || y >= height - 2) {
+            touchesBorder = true;
+          }
+
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+
+              const nx = x + dx;
+              const ny = y + dy;
+
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const np = idx(nx, ny);
+                if (!visited[np] && closed[np]) {
+                  visited[np] = 1;
+                  queue.push([nx, ny]);
+                }
+              }
+            }
+          }
+        }
+
+        const boxWidth = maxX - minX + 1;
+        const boxHeight = maxY - minY + 1;
+        const area = pixels.length;
+        const boxArea = boxWidth * boxHeight;
+        const density = area / Math.max(boxArea, 1);
+
+        return {
+          pixels,
+          area,
+          boxWidth,
+          boxHeight,
+          boxArea,
+          density,
+          touchesBorder
+        };
+      }
+
+      // 3) Büyük ve kenara bağlı dekorları sil
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const p = idx(x, y);
+
+          if (!visited[p] && closed[p]) {
+            const comp = bfs(x, y);
+
+            const isLargeBorderDecoration =
+              comp.touchesBorder &&
+              (
+                comp.area > 1800 ||
+                comp.boxWidth > width * 0.12 ||
+                comp.boxHeight > height * 0.18
+              ) &&
+              comp.density > 0.08;
+
+            const isTinyNoise = comp.area < 4;
+
+            if (!isLargeBorderDecoration && !isTinyNoise) {
+              for (const px of comp.pixels) {
+                keep[px] = 1;
+              }
+            }
+          }
+        }
+      }
+
+      // 4) Son görüntü
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const v = keep[p] ? 0 : 255;
+        data[i] = v;
+        data[i + 1] = v;
+        data[i + 2] = v;
+        data[i + 3] = 255;
+      }
+
+      return imageData;
+    }
+
+    function cloneCanvas(oldCanvas) {
+      const newCanvas = document.createElement("canvas");
+      newCanvas.width = oldCanvas.width;
+      newCanvas.height = oldCanvas.height;
+      const ctx = newCanvas.getContext("2d");
+      ctx.drawImage(oldCanvas, 0, 0);
+      return newCanvas;
+    }
+
+    async function renderPdf(pdfData) {
+      const darkThreshold = Number(darkThresholdEl.value);
+      const whiteTextThreshold = Number(whiteTextThresholdEl.value);
+      const coloredThreshold = Number(coloredThresholdEl.value);
+
+      const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+      const pdf = await loadingTask.promise;
+
+      previewEl.innerHTML = "";
+      processedPages = [];
+      downloadBtn.disabled = true;
+
+      setStatus(`PDF yüklendi. Toplam sayfa: ${pdf.numPages}\nİşleniyor...`);
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        setStatus(`Sayfa ${pageNum}/${pdf.numPages} işleniyor...`);
+
+        const page = await pdf.getPage(pageNum);
+
+        // Daha yüksek çözünürlük
+        const viewport = page.getViewport({ scale: 2.8 });
+
+        const originalCanvas = document.createElement("canvas");
+        const originalCtx = originalCanvas.getContext("2d", { willReadFrequently: true });
+        originalCanvas.width = viewport.width;
+        originalCanvas.height = viewport.height;
+
+        await page.render({
+          canvasContext: originalCtx,
+          viewport
+        }).promise;
+
+        const imageData = originalCtx.getImageData(
+          0,
+          0,
+          originalCanvas.width,
+          originalCanvas.height
+        );
+
+        const analysis = analyzePageBrightness(imageData, darkThreshold);
+        const outputCanvas = cloneCanvas(originalCanvas);
+        const outputCtx = outputCanvas.getContext("2d", { willReadFrequently: true });
+
+        if (analysis.isDarkPage) {
+          const outImageData = outputCtx.getImageData(
+            0,
+            0,
+            outputCanvas.width,
+            outputCanvas.height
+          );
+
+          const transformed = transformDarkPageToPrintFriendly(outImageData, {
+            whiteTextThreshold,
+            coloredThreshold
+          });
+
+          outputCtx.putImageData(transformed, 0, 0);
+        }
+
+        processedPages.push({
+          pageNum,
+          canvas: outputCanvas,
+          width: outputCanvas.width,
+          height: outputCanvas.height,
+          isDarkPage: analysis.isDarkPage,
+          avgLum: analysis.avgLum,
+          darkRatio: analysis.darkRatio
+        });
+
+        const card = document.createElement("div");
+        card.className = "page-card";
+
+        const title = document.createElement("h3");
+        title.innerHTML = `
+          Sayfa ${pageNum}
+          <span class="tag ${analysis.isDarkPage ? "dark" : "light"}">
+            ${analysis.isDarkPage ? "Dönüştürüldü" : "Aynen bırakıldı"}
+          </span>
+        `;
+
+        const info = document.createElement("div");
+        info.className = "small";
+        info.textContent =
+          `Ortalama parlaklık: ${analysis.avgLum.toFixed(1)} | Koyu piksel oranı: ${(analysis.darkRatio * 100).toFixed(1)}%`;
+
+        const previewCanvas = document.createElement("canvas");
+        const pctx = previewCanvas.getContext("2d");
+        previewCanvas.width = outputCanvas.width;
+        previewCanvas.height = outputCanvas.height;
+        pctx.drawImage(outputCanvas, 0, 0);
+
+        card.appendChild(title);
+        card.appendChild(info);
+        card.appendChild(document.createElement("br"));
+        card.appendChild(previewCanvas);
+
+        previewEl.appendChild(card);
+      }
+
+      setStatus("İşlem tamamlandı. Önizlemeyi kontrol edip PDF olarak indirebilirsin.");
+      downloadBtn.disabled = false;
+    }
+
+    async function downloadProcessedPdf() {
+      if (!processedPages.length) return;
+
+      const { jsPDF } = window.jspdf;
+
+      setStatus("Yeni PDF hazırlanıyor...");
+
+      const first = processedPages[0];
+      const orientation = first.width > first.height ? "landscape" : "portrait";
+
+      const pdf = new jsPDF({
+        orientation,
+        unit: "pt",
+        format: [first.width, first.height]
+      });
+
+      for (let i = 0; i < processedPages.length; i++) {
+        const p = processedPages[i];
+
+        if (i > 0) {
+          pdf.addPage([p.width, p.height], p.width > p.height ? "landscape" : "portrait");
+        }
+
+        const imgData = p.canvas.toDataURL("image/jpeg", 0.95);
+        pdf.addImage(imgData, "JPEG", 0, 0, p.width, p.height);
+      }
+
+      pdf.save("donusturulmus_ders_notlari.pdf");
+      setStatus("PDF indirildi.");
+    }
+
+    processBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Lütfen önce bir PDF seç.");
+        return;
+      }
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        await renderPdf(arrayBuffer);
+      } catch (err) {
+        console.error(err);
+        setStatus("Hata oluştu: " + err.message);
+        alert("PDF işlenirken hata oluştu. Konsolu kontrol et.");
+      }
+    });
+
+    downloadBtn.addEventListener("click", async () => {
+      try {
+        await downloadProcessedPdf();
+      } catch (err) {
+        console.error(err);
+        setStatus("PDF oluşturulurken hata oluştu: " + err.message);
+        alert("PDF oluşturulurken hata oluştu.");
+      }
+    });
+  </script>
+</body>
+</html>
