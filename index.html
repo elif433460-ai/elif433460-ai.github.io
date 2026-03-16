@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF Beyaz Arka Plan Siyah Yazı Dönüştürücü</title>
+  <title>PDF Renkli Arka Plan / Yazı Dönüştürücü</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -19,7 +19,7 @@
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 24px auto;
       padding: 0 16px;
     }
@@ -96,7 +96,7 @@
 
     .preview-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 16px;
     }
 
@@ -170,6 +170,16 @@
       width: 100%;
     }
 
+    .control-box input[type="color"] {
+      width: 100%;
+      height: 42px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      padding: 2px;
+      cursor: pointer;
+    }
+
     .control-value {
       font-size: 13px;
       color: #334155;
@@ -181,16 +191,47 @@
       color: #475569;
       margin-top: 8px;
     }
+
+    .themes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .theme-btn {
+      border: 1px solid #cbd5e1;
+      background: white;
+      color: #0f172a;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .theme-btn:hover {
+      background: #f8fafc;
+    }
+
+    .swatch {
+      display: inline-flex;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      margin-right: 6px;
+      border: 1px solid rgba(0,0,0,0.15);
+      vertical-align: -2px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h1>PDF Beyaz Arka Plan / Siyah Yazı Dönüştürücü</h1>
+      <h1>PDF Renkli Arka Plan / Yazı Dönüştürücü</h1>
       <p>
-        Koyu arka planlı ders notu sayfalarını otomatik olarak
-        <strong>beyaz arka plan + siyah yazı</strong> haline getirir.
-        Açık/beyaz sayfalar mümkün olduğunca aynen bırakılır.
+        Koyu arka planlı sayfalarda dekorları temizler, ok/çizgi/şemaları mümkün olduğunca korur,
+        sonra PDF’nin gerçek metnini tekrar çizerek yazı kaybını engeller.
       </p>
 
       <div class="row">
@@ -209,17 +250,70 @@
 
         <div class="control-box">
           <label for="whiteTextThreshold">Beyaz yazı eşiği</label>
-          <input type="range" id="whiteTextThreshold" min="120" max="180" step="1" value="138" />
-          <div class="control-value" id="whiteTextThresholdValue">138</div>
-          <div class="note">Daha düşük değer = daha fazla açık yazı yakalanır.</div>
+          <input type="range" id="whiteTextThreshold" min="120" max="180" step="1" value="134" />
+          <div class="control-value" id="whiteTextThresholdValue">134</div>
+          <div class="note">Daha düşük değer = açık yazılar daha fazla yakalanır.</div>
         </div>
 
         <div class="control-box">
           <label for="coloredThreshold">Renkli öğe eşiği</label>
-          <input type="range" id="coloredThreshold" min="70" max="130" step="1" value="88" />
-          <div class="control-value" id="coloredThresholdValue">88</div>
-          <div class="note">Oklar ve renkli başlıklar için hassasiyet.</div>
+          <input type="range" id="coloredThreshold" min="70" max="130" step="1" value="92" />
+          <div class="control-value" id="coloredThresholdValue">92</div>
+          <div class="note">Ok ve renkli çizgileri koruma hassasiyeti.</div>
         </div>
+
+        <div class="control-box">
+          <label for="bgColor">Arka plan rengi</label>
+          <input type="color" id="bgColor" value="#ffffff" />
+          <div class="control-value" id="bgColorValue">#ffffff</div>
+          <div class="note">Dönüşen sayfaların arka plan rengi.</div>
+        </div>
+
+        <div class="control-box">
+          <label for="textColor">Yazı rengi</label>
+          <input type="color" id="textColor" value="#000000" />
+          <div class="control-value" id="textColorValue">#000000</div>
+          <div class="note">PDF metni bu renkle yeniden çizilir.</div>
+        </div>
+
+        <div class="control-box">
+          <label for="shapeMode">Şekiller / oklar</label>
+          <input type="range" id="shapeMode" min="0" max="1" step="1" value="0" />
+          <div class="control-value" id="shapeModeValue">Yazı rengine boya</div>
+          <div class="note">0: siyah yerine seçilen yazı rengi. 1: saf siyah bırak.</div>
+        </div>
+      </div>
+
+      <div class="themes">
+        <button class="theme-btn" data-bg="#ffffff" data-text="#000000">
+          <span class="swatch" style="background:#ffffff"></span>
+          <span class="swatch" style="background:#000000"></span>
+          Klasik
+        </button>
+
+        <button class="theme-btn" data-bg="#f6f0e1" data-text="#3b2f2f">
+          <span class="swatch" style="background:#f6f0e1"></span>
+          <span class="swatch" style="background:#3b2f2f"></span>
+          Sepya
+        </button>
+
+        <button class="theme-btn" data-bg="#f8fafc" data-text="#0f172a">
+          <span class="swatch" style="background:#f8fafc"></span>
+          <span class="swatch" style="background:#0f172a"></span>
+          Açık Gri / Lacivert
+        </button>
+
+        <button class="theme-btn" data-bg="#fffdf7" data-text="#2f3e46">
+          <span class="swatch" style="background:#fffdf7"></span>
+          <span class="swatch" style="background:#2f3e46"></span>
+          Kağıt
+        </button>
+
+        <button class="theme-btn" data-bg="#1e293b" data-text="#f8fafc">
+          <span class="swatch" style="background:#1e293b"></span>
+          <span class="swatch" style="background:#f8fafc"></span>
+          Gece Modu
+        </button>
       </div>
 
       <div class="status" id="status">
@@ -227,8 +321,7 @@ PDF seçip “PDF'i İşle” butonuna bas.
       </div>
 
       <p class="small">
-        Not: Çıktı, sayfalar görüntüye dönüştürülüp yeni PDF olarak oluşturularak alınır.
-        Bu yüzden metin seçilebilirliği korunmayabilir.
+        Not: Bu sürüm görüntü işleme + PDF metin katmanını birlikte kullanır.
       </p>
     </div>
 
@@ -253,36 +346,59 @@ PDF seçip “PDF'i İşle” butonuna bas.
     const darkThresholdEl = document.getElementById("darkThreshold");
     const whiteTextThresholdEl = document.getElementById("whiteTextThreshold");
     const coloredThresholdEl = document.getElementById("coloredThreshold");
+    const bgColorEl = document.getElementById("bgColor");
+    const textColorEl = document.getElementById("textColor");
+    const shapeModeEl = document.getElementById("shapeMode");
 
     const darkThresholdValueEl = document.getElementById("darkThresholdValue");
     const whiteTextThresholdValueEl = document.getElementById("whiteTextThresholdValue");
     const coloredThresholdValueEl = document.getElementById("coloredThresholdValue");
+    const bgColorValueEl = document.getElementById("bgColorValue");
+    const textColorValueEl = document.getElementById("textColorValue");
+    const shapeModeValueEl = document.getElementById("shapeModeValue");
 
     let processedPages = [];
+    let originalPdfArrayBuffer = null;
 
     function setStatus(text) {
       statusEl.textContent = text;
-    }
-
-    function clamp(v, min, max) {
-      return Math.max(min, Math.min(max, v));
     }
 
     function getLuminance(r, g, b) {
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
+    function hexToRgb(hex) {
+      const clean = hex.replace("#", "");
+      const value = parseInt(clean, 16);
+      return {
+        r: (value >> 16) & 255,
+        g: (value >> 8) & 255,
+        b: value & 255
+      };
+    }
+
     function updateControlLabels() {
       darkThresholdValueEl.textContent = darkThresholdEl.value;
       whiteTextThresholdValueEl.textContent = whiteTextThresholdEl.value;
       coloredThresholdValueEl.textContent = coloredThresholdEl.value;
+      bgColorValueEl.textContent = bgColorEl.value;
+      textColorValueEl.textContent = textColorEl.value;
+      shapeModeValueEl.textContent = Number(shapeModeEl.value) === 0 ? "Yazı rengine boya" : "Saf siyah bırak";
     }
 
     updateControlLabels();
 
-    darkThresholdEl.addEventListener("input", updateControlLabels);
-    whiteTextThresholdEl.addEventListener("input", updateControlLabels);
-    coloredThresholdEl.addEventListener("input", updateControlLabels);
+    [darkThresholdEl, whiteTextThresholdEl, coloredThresholdEl, bgColorEl, textColorEl, shapeModeEl]
+      .forEach(el => el.addEventListener("input", updateControlLabels));
+
+    document.querySelectorAll(".theme-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        bgColorEl.value = btn.dataset.bg;
+        textColorEl.value = btn.dataset.text;
+        updateControlLabels();
+      });
+    });
 
     function analyzePageBrightness(imageData, darkThreshold) {
       const data = imageData.data;
@@ -291,7 +407,7 @@ PDF seçip “PDF'i İşle” butonuna bas.
       let veryDarkPixels = 0;
       let brightPixels = 0;
 
-      const step = 16;
+      const step = 24;
       let count = 0;
 
       for (let i = 0; i < data.length; i += step) {
@@ -313,14 +429,11 @@ PDF seçip “PDF'i İşle” butonuna bas.
       const veryDarkRatio = veryDarkPixels / count;
       const brightRatio = brightPixels / count;
 
-      // Daha sıkı koyu sayfa tespiti:
-      // Sadece ortalama düşükse değil,
-      // aynı zamanda ciddi miktarda koyu alan da olmalı.
       const isDarkPage =
-        (avgLum < darkThreshold && darkRatio > 0.28) ||
-        (avgLum < darkThreshold - 6 && darkRatio > 0.22) ||
-        (avgLum < darkThreshold - 12) ||
-        (veryDarkRatio > 0.18 && brightRatio < 0.35 && avgLum < darkThreshold + 2);
+        (avgLum < darkThreshold && darkRatio > 0.30) ||
+        (avgLum < darkThreshold - 8 && darkRatio > 0.24) ||
+        (avgLum < darkThreshold - 14) ||
+        (veryDarkRatio > 0.20 && brightRatio < 0.33 && avgLum < darkThreshold + 1);
 
       return {
         avgLum,
@@ -331,23 +444,104 @@ PDF seçip “PDF'i İşle” butonuna bas.
       };
     }
 
-    function transformDarkPageToPrintFriendly(imageData, settings) {
+    function bfsMask(startX, startY, sourceMask, visited, width, height) {
+      const idx = (x, y) => y * width + x;
+
+      const queueX = [startX];
+      const queueY = [startY];
+      let head = 0;
+
+      const pixels = [];
+      visited[idx(startX, startY)] = 1;
+
+      let minX = startX, maxX = startX;
+      let minY = startY, maxY = startY;
+
+      let touchesLeft = false;
+      let touchesRight = false;
+      let touchesTop = false;
+      let touchesBottom = false;
+
+      let leftEdgeCount = 0;
+      let rightEdgeCount = 0;
+      let topEdgeCount = 0;
+      let bottomEdgeCount = 0;
+
+      while (head < queueX.length) {
+        const x = queueX[head];
+        const y = queueY[head];
+        head++;
+
+        const p = idx(x, y);
+        pixels.push(p);
+
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+
+        if (x <= 1) { touchesLeft = true; leftEdgeCount++; }
+        if (x >= width - 2) { touchesRight = true; rightEdgeCount++; }
+        if (y <= 1) { touchesTop = true; topEdgeCount++; }
+        if (y >= height - 2) { touchesBottom = true; bottomEdgeCount++; }
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+
+            const nx = x + dx;
+            const ny = y + dy;
+
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+              const np = idx(nx, ny);
+              if (!visited[np] && sourceMask[np]) {
+                visited[np] = 1;
+                queueX.push(nx);
+                queueY.push(ny);
+              }
+            }
+          }
+        }
+      }
+
+      const boxWidth = maxX - minX + 1;
+      const boxHeight = maxY - minY + 1;
+      const area = pixels.length;
+      const boxArea = boxWidth * boxHeight;
+      const density = area / Math.max(boxArea, 1);
+
+      return {
+        pixels,
+        area,
+        boxWidth,
+        boxHeight,
+        density,
+        touchesLeft,
+        touchesRight,
+        touchesTop,
+        touchesBottom,
+        edgeTouchCount: leftEdgeCount + rightEdgeCount + topEdgeCount + bottomEdgeCount
+      };
+    }
+
+    function transformDarkPageToTheme(imageData, settings) {
       const data = imageData.data;
       const width = imageData.width;
       const height = imageData.height;
-
       const totalPixels = width * height;
-      const mask = new Uint8Array(totalPixels);
-      const closed = new Uint8Array(totalPixels);
-      const visited = new Uint8Array(totalPixels);
-      const keep = new Uint8Array(totalPixels);
+
+      const whiteMask = new Uint8Array(totalPixels);
+      const colorMask = new Uint8Array(totalPixels);
+      const colorClosed = new Uint8Array(totalPixels);
+      const visitedColor = new Uint8Array(totalPixels);
+      const keepColor = new Uint8Array(totalPixels);
+      const finalMask = new Uint8Array(totalPixels);
 
       const idx = (x, y) => y * width + x;
 
       const whiteTextThreshold = settings.whiteTextThreshold;
       const coloredThreshold = settings.coloredThreshold;
 
-      // 1) Açık yazı / açık renkli içerik tespiti
       for (let i = 0, p = 0; i < data.length; i += 4, p++) {
         const r = data[i];
         const g = data[i + 1];
@@ -355,146 +549,199 @@ PDF seçip “PDF'i İşle” butonuna bas.
 
         const maxc = Math.max(r, g, b);
         const minc = Math.min(r, g, b);
-        const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        const lum = getLuminance(r, g, b);
         const sat = maxc === 0 ? 0 : (maxc - minc) / maxc;
 
-        const isWhiteText = lum > whiteTextThreshold;
+        const isWhiteText =
+          lum > whiteTextThreshold &&
+          sat < 0.34;
 
         const isColoredBright =
           lum > coloredThreshold &&
           sat > 0.14 &&
-          (g >= r || g >= b);
+          (g >= r || g >= b) &&
+          !isWhiteText;
 
-        mask[p] = (isWhiteText || isColoredBright) ? 1 : 0;
+        whiteMask[p] = isWhiteText ? 1 : 0;
+        colorMask[p] = isColoredBright ? 1 : 0;
       }
 
-      // 2) Çok hafif kapatma işlemi
-      // Yazıyı çok kalınlaştırmamak için daha yumuşak
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const p = idx(x, y);
 
-          if (mask[p]) {
-            closed[p] = 1;
+          if (colorMask[p]) {
+            colorClosed[p] = 1;
             continue;
           }
 
           let count = 0;
-
           for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
               if (dx === 0 && dy === 0) continue;
-
               const nx = x + dx;
               const ny = y + dy;
-
               if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                if (mask[idx(nx, ny)]) count++;
+                if (colorMask[idx(nx, ny)]) count++;
               }
             }
           }
 
-          // 5 komşu ile hafif koruma; çok şişirmez
-          closed[p] = count >= 5 ? 1 : 0;
+          colorClosed[p] = count >= 5 ? 1 : 0;
         }
       }
 
-      function bfs(startX, startY) {
-        const queue = [[startX, startY]];
-        const pixels = [];
-        visited[idx(startX, startY)] = 1;
-
-        let minX = startX, maxX = startX;
-        let minY = startY, maxY = startY;
-        let touchesBorder = false;
-
-        while (queue.length) {
-          const [x, y] = queue.pop();
-          const p = idx(x, y);
-          pixels.push(p);
-
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-
-          if (x <= 1 || y <= 1 || x >= width - 2 || y >= height - 2) {
-            touchesBorder = true;
-          }
-
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if (dx === 0 && dy === 0) continue;
-
-              const nx = x + dx;
-              const ny = y + dy;
-
-              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                const np = idx(nx, ny);
-                if (!visited[np] && closed[np]) {
-                  visited[np] = 1;
-                  queue.push([nx, ny]);
-                }
-              }
-            }
-          }
-        }
-
-        const boxWidth = maxX - minX + 1;
-        const boxHeight = maxY - minY + 1;
-        const area = pixels.length;
-        const boxArea = boxWidth * boxHeight;
-        const density = area / Math.max(boxArea, 1);
-
-        return {
-          pixels,
-          area,
-          boxWidth,
-          boxHeight,
-          boxArea,
-          density,
-          touchesBorder
-        };
-      }
-
-      // 3) Büyük ve kenara bağlı dekorları sil
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const p = idx(x, y);
+          if (!visitedColor[p] && colorClosed[p]) {
+            const comp = bfsMask(x, y, colorClosed, visitedColor, width, height);
 
-          if (!visited[p] && closed[p]) {
-            const comp = bfs(x, y);
+            const touchesAnyBorder =
+              comp.touchesLeft || comp.touchesRight || comp.touchesTop || comp.touchesBottom;
 
             const isLargeBorderDecoration =
-              comp.touchesBorder &&
+              touchesAnyBorder &&
               (
-                comp.area > 1800 ||
-                comp.boxWidth > width * 0.12 ||
-                comp.boxHeight > height * 0.18
-              ) &&
-              comp.density > 0.08;
+                (comp.area > 1800 && comp.edgeTouchCount > 110) ||
+                (comp.boxWidth > width * 0.09 && comp.boxHeight > height * 0.18 && comp.density > 0.10)
+              );
 
             const isTinyNoise = comp.area < 4;
 
             if (!isLargeBorderDecoration && !isTinyNoise) {
+              for (const px of comp.pixels) keepColor[px] = 1;
+            }
+          }
+        }
+      }
+
+      for (let p = 0; p < totalPixels; p++) {
+        finalMask[p] = (whiteMask[p] || keepColor[p]) ? 1 : 0;
+      }
+
+      const visitedFinal = new Uint8Array(totalPixels);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const p = idx(x, y);
+          if (!visitedFinal[p] && finalMask[p]) {
+            const comp = bfsMask(x, y, finalMask, visitedFinal, width, height);
+
+            const touchesAnyBorder =
+              comp.touchesLeft || comp.touchesRight || comp.touchesTop || comp.touchesBottom;
+
+            const isRemainingBorderDecoration =
+              touchesAnyBorder &&
+              comp.area > 1800 &&
+              comp.edgeTouchCount > 120 &&
+              comp.boxWidth > width * 0.06 &&
+              comp.boxHeight > height * 0.14 &&
+              comp.density > 0.16;
+
+            if (isRemainingBorderDecoration) {
               for (const px of comp.pixels) {
-                keep[px] = 1;
+                finalMask[px] = 0;
               }
             }
           }
         }
       }
 
-      // 4) Son görüntü
+      const bg = hexToRgb(settings.bgColor);
+      const fg = hexToRgb(settings.textColor);
+      const shapeMode = Number(settings.shapeMode);
+
       for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-        const v = keep[p] ? 0 : 255;
-        data[i] = v;
-        data[i + 1] = v;
-        data[i + 2] = v;
+        if (finalMask[p]) {
+          if (shapeMode === 1) {
+            data[i] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+          } else {
+            data[i] = fg.r;
+            data[i + 1] = fg.g;
+            data[i + 2] = fg.b;
+          }
+        } else {
+          data[i] = bg.r;
+          data[i + 1] = bg.g;
+          data[i + 2] = bg.b;
+        }
         data[i + 3] = 255;
       }
 
       return imageData;
+    }
+
+    async function drawPdfTextOverlay(page, ctx, viewport, settings, pad = 0) {
+      const textContent = await page.getTextContent();
+      const bg = hexToRgb(settings.bgColor);
+      const fg = hexToRgb(settings.textColor);
+
+      ctx.save();
+      ctx.fillStyle = `rgb(${fg.r}, ${fg.g}, ${fg.b})`;
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
+
+      for (const item of textContent.items) {
+        const str = (item.str || "").replace(/\u0000/g, "");
+        if (!str.trim()) continue;
+
+        const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+
+        const x = tx[4] + pad;
+        const y = tx[5] + pad;
+
+        const a = tx[0];
+        const b = tx[1];
+        const c = tx[2];
+        const d = tx[3];
+
+        const angle = Math.atan2(b, a);
+        const fontHeight = Math.max(1, Math.hypot(c, d) || Math.hypot(a, b) || 10);
+
+        let scaleX = 1;
+        const horiz = Math.hypot(a, b);
+        const vert = Math.hypot(c, d);
+        if (vert > 0 && horiz > 0) {
+          scaleX = horiz / vert;
+        }
+
+        const estimatedWidth = Math.max(1, (item.width || str.length * 5) * viewport.scale);
+
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = `rgb(${bg.r}, ${bg.g}, ${bg.b})`;
+        ctx.fillRect(
+          x - 2,
+          y - fontHeight * 0.95,
+          estimatedWidth + 6,
+          fontHeight * 1.35
+        );
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.scale(Math.abs(scaleX), 1);
+
+        ctx.fillStyle = `rgb(${fg.r}, ${fg.g}, ${fg.b})`;
+        ctx.font = `${fontHeight}px Arial, Helvetica, sans-serif`;
+        ctx.fillText(str, 0, 0);
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    function fillCanvasBackground(ctx, canvas, bgColor) {
+      const bg = hexToRgb(bgColor);
+      ctx.save();
+      ctx.fillStyle = `rgb(${bg.r}, ${bg.g}, ${bg.b})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
     }
 
     function cloneCanvas(oldCanvas) {
@@ -511,6 +758,12 @@ PDF seçip “PDF'i İşle” butonuna bas.
       const whiteTextThreshold = Number(whiteTextThresholdEl.value);
       const coloredThreshold = Number(coloredThresholdEl.value);
 
+      const visualSettings = {
+        bgColor: bgColorEl.value,
+        textColor: textColorEl.value,
+        shapeMode: shapeModeEl.value
+      };
+
       const loadingTask = pdfjsLib.getDocument({ data: pdfData });
       const pdf = await loadingTask.promise;
 
@@ -521,35 +774,52 @@ PDF seçip “PDF'i İşle” butonuna bas.
       setStatus(`PDF yüklendi. Toplam sayfa: ${pdf.numPages}\nİşleniyor...`);
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        setStatus(`Sayfa ${pageNum}/${pdf.numPages} işleniyor...`);
+        setStatus(`Sayfa ${pageNum}/${pdf.numPages} analiz ediliyor...`);
 
         const page = await pdf.getPage(pageNum);
 
-        // Daha yüksek çözünürlük
-        const viewport = page.getViewport({ scale: 2.8 });
+        const analysisViewport = page.getViewport({ scale: 0.9 });
+        const analysisCanvas = document.createElement("canvas");
+        const analysisCtx = analysisCanvas.getContext("2d", { willReadFrequently: true });
+        analysisCanvas.width = Math.ceil(analysisViewport.width);
+        analysisCanvas.height = Math.ceil(analysisViewport.height);
+
+        await page.render({
+          canvasContext: analysisCtx,
+          viewport: analysisViewport
+        }).promise;
+
+        const analysisImageData = analysisCtx.getImageData(
+          0,
+          0,
+          analysisCanvas.width,
+          analysisCanvas.height
+        );
+
+        const analysis = analyzePageBrightness(analysisImageData, darkThreshold);
+
+        const renderScale = analysis.isDarkPage ? 2.4 : 1.5;
+        const viewport = page.getViewport({ scale: renderScale });
 
         const originalCanvas = document.createElement("canvas");
         const originalCtx = originalCanvas.getContext("2d", { willReadFrequently: true });
-        originalCanvas.width = viewport.width;
-        originalCanvas.height = viewport.height;
+
+        const pad = analysis.isDarkPage ? 16 : 0;
+        originalCanvas.width = Math.ceil(viewport.width + pad * 2);
+        originalCanvas.height = Math.ceil(viewport.height + pad * 2);
 
         await page.render({
           canvasContext: originalCtx,
-          viewport
+          viewport,
+          transform: [1, 0, 0, 1, pad, pad]
         }).promise;
 
-        const imageData = originalCtx.getImageData(
-          0,
-          0,
-          originalCanvas.width,
-          originalCanvas.height
-        );
-
-        const analysis = analyzePageBrightness(imageData, darkThreshold);
         const outputCanvas = cloneCanvas(originalCanvas);
         const outputCtx = outputCanvas.getContext("2d", { willReadFrequently: true });
 
         if (analysis.isDarkPage) {
+          setStatus(`Sayfa ${pageNum}/${pdf.numPages} dönüştürülüyor...`);
+
           const outImageData = outputCtx.getImageData(
             0,
             0,
@@ -557,12 +827,20 @@ PDF seçip “PDF'i İşle” butonuna bas.
             outputCanvas.height
           );
 
-          const transformed = transformDarkPageToPrintFriendly(outImageData, {
+          const transformed = transformDarkPageToTheme(outImageData, {
             whiteTextThreshold,
-            coloredThreshold
+            coloredThreshold,
+            ...visualSettings
           });
 
           outputCtx.putImageData(transformed, 0, 0);
+
+          await drawPdfTextOverlay(page, outputCtx, viewport, visualSettings, pad);
+        } else {
+          // Açık sayfalarda da istenen arka planı uygula ve metni seçilen renkte yeniden çiz.
+          // Böylece tüm çıktı tek tema altında olur.
+          fillCanvasBackground(outputCtx, outputCanvas, visualSettings.bgColor);
+          await drawPdfTextOverlay(page, outputCtx, viewport, visualSettings, pad);
         }
 
         processedPages.push({
@@ -582,7 +860,7 @@ PDF seçip “PDF'i İşle” butonuna bas.
         title.innerHTML = `
           Sayfa ${pageNum}
           <span class="tag ${analysis.isDarkPage ? "dark" : "light"}">
-            ${analysis.isDarkPage ? "Dönüştürüldü" : "Aynen bırakıldı"}
+            ${analysis.isDarkPage ? "Dönüştürüldü" : "Tema uygulandı"}
           </span>
         `;
 
@@ -603,6 +881,8 @@ PDF seçip “PDF'i İşle” butonuna bas.
         card.appendChild(previewCanvas);
 
         previewEl.appendChild(card);
+
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
 
       setStatus("İşlem tamamlandı. Önizlemeyi kontrol edip PDF olarak indirebilirsin.");
@@ -632,7 +912,7 @@ PDF seçip “PDF'i İşle” butonuna bas.
           pdf.addPage([p.width, p.height], p.width > p.height ? "landscape" : "portrait");
         }
 
-        const imgData = p.canvas.toDataURL("image/jpeg", 0.95);
+        const imgData = p.canvas.toDataURL("image/jpeg", 0.93);
         pdf.addImage(imgData, "JPEG", 0, 0, p.width, p.height);
       }
 
@@ -648,8 +928,8 @@ PDF seçip “PDF'i İşle” butonuna bas.
       }
 
       try {
-        const arrayBuffer = await file.arrayBuffer();
-        await renderPdf(arrayBuffer);
+        originalPdfArrayBuffer = await file.arrayBuffer();
+        await renderPdf(originalPdfArrayBuffer);
       } catch (err) {
         console.error(err);
         setStatus("Hata oluştu: " + err.message);
